@@ -39,10 +39,16 @@ function addLinks()
     propertyList.appendChild(copyElement);
   }
 
-  var pwshElement = createCopyPowershellCheck();
-  if(pwshElement)
+  var usrPwshElement = createUserCopyPowershellCheck();
+  if(usrPwshElement)
   {
-    propertyList.appendChild(pwshElement);
+    propertyList.appendChild(usrPwshElement);
+  }
+
+  var mailPwshElement = createMailCopyPowershellCheck();
+  if(mailPwshElement)
+  {
+    propertyList.appendChild(mailPwshElement);
   }
 }
 
@@ -87,7 +93,22 @@ function createCopyUserName()
   return newElement;
 }
 
-function createCopyPowershellCheck()
+function createMailCopyPowershellCheck()
+{
+  var userEmail = getUserEmail();
+
+  if(!userEmail || userEmail == " ")
+  {
+    return;
+  }
+  var searchUrl =  (createCopyPowershellCheck("UserPrincipalName",userEmail))
+  var newElement = document.createElement("li");
+  newElement.innerHTML += `<div class="wrap"><strong title="URL" class="name">Powershell Mail:</strong><div class="value">${searchUrl}</div></div>`;
+  newElement.classList.add("item");
+  return newElement;
+}
+
+function createUserCopyPowershellCheck()
 {
   var userName = getUserName();
 
@@ -95,16 +116,22 @@ function createCopyPowershellCheck()
   {
     return;
   }
+  var searchUrl = createCopyPowershellCheck("DisplayName",userName)
+  var newElement = document.createElement("li");
+  newElement.innerHTML += `<div class="wrap"><strong title="URL" class="name">Powershell User:</strong><div class="value">${searchUrl}</div></div>`;
+  newElement.classList.add("item");
+  return newElement;
+}
 
+function createCopyPowershellCheck(filterField, filter)
+{
   var newElement = document.createElement("li");
 
   var pwsh = "";
-  pwsh = "Get-User -Filter {DisplayName -like &quot;" + userName + "&quot;}| Select DisplayName,UserPrincipalName,Title,Office,Department | Format-Table";
+  pwsh = "Get-User -Filter {" + filterField + " -like &quot;" + filter + "&quot;}| Select DisplayName,UserPrincipalName,Title,Office,Department | Format-Table";
 
   var searchUrl = `<a onclick="navigator.clipboard.writeText('${pwsh}')">Skopiuj sprawdzenie w Powershell</a>`;
-  newElement.innerHTML += `<div class="wrap"><strong title="URL" class="name">Powershell:</strong><div class="value">${searchUrl}</div></div>`;
-  newElement.classList.add("item");
-  return newElement;
+  return searchUrl;
 }
 
 function getUserId()
@@ -150,4 +177,17 @@ function getUserName()
   var lastName = lastNameField.innerText;
 
   return firstName + " " + lastName;
+}
+
+function getUserEmail()
+{
+  var zhpMailField = document.getElementById("customfield_10701-val");
+
+
+  if(!zhpMailField)
+  {
+    return "";
+  }
+
+  return zhpMailField.innerText;
 }
